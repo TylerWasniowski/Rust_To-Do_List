@@ -1,6 +1,7 @@
 [package]
-name = "Rust_To-Do_List"
+name = "rust_to_do_list"
 version = "0.1.0"
 authors = ["TylerWasniowski <TylerWasniowski@gmail.com>"]
 
 [dependencies]
+#regex = "0.2.6"

@@ -23,9 +23,25 @@ impl<T> Database<T> {
         self.data.get_mut(index)
     }
 
-    pub fn find_first<F: Fn(&&T) -> bool>(&self, predicate: F) -> Option<&T> {
+    pub fn position_first<F: Fn(&T) -> bool>(&self, predicate: F) -> Option<usize> {
         self.data.iter()
-            .find(predicate)
+            .position(predicate)
+    }
+
+    pub fn position_all<F: Fn(&T) -> bool>(&self, predicate: F) -> Vec<usize> {
+        self.data.iter()
+            .enumerate()
+            .filter(|&(_, value)| predicate(value))
+            .map(|(index, _)| index)
+            .collect::<Vec<usize>>()
+    }
+
+    pub fn find_first<F: Fn(&T) -> bool>(&self, predicate: F) -> Option<&T> {
+        if let Some(index) = self.position_first(predicate) {
+            self.get(index)
+        } else {
+            None
+        }
     }
 
     pub fn find_all<F: Fn(&&T) -> bool>(&self, predicate: F) -> Vec<&T> {
@@ -68,11 +84,12 @@ impl<T> Database<T> {
     }
 
     pub fn remove_first<F: Fn(&T) -> bool>(&mut self, predicate: F) -> Option<T> {
-        match self.data.iter()
+        if let Some(index) = self.data.iter()
             .position(predicate)
         {
-            Some(index) => Some(self.data.remove(index)),
-            None => None,
+            Some(self.data.remove(index))
+        } else {
+            None
         }
     }
 

@@ -1,4 +1,5 @@
 pub mod db;
+pub mod to_do_list;
 
 use db::Database;
 
@@ -10,11 +11,6 @@ fn main() {
     database.add("Hello".to_string());
     database.add(String::from("Hola mundo!"));
     database.add("Yo".to_string());
-
-    match database.find_first(|data| data.len() < 5) {
-        Some(s) => println!("Hello {}", s),
-        None => (),
-    }
 
     println!("Database: {:?}", database.read_all());
     println!("Find first string less than 5: {:?}",

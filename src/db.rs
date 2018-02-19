@@ -7,16 +7,20 @@ pub struct Database<T> {
 }
 
 impl<T> Database<T> {
-    pub fn add(&mut self, data: T) {
-        self.data.push(data);
+    pub fn add(&mut self, value: T) {
+        self.data.push(value);
     }
 
     pub fn read_all(&self) -> &Vec<T> {
         &self.data
     }
 
-    pub fn get(&self, i: usize) -> Option<&T> {
-        self.data.get(i)
+    pub fn get(&self, index: usize) -> Option<&T> {
+        self.data.get(index)
+    }
+
+    pub fn get_mut(&mut self, index: usize) -> Option<&mut T> {
+        self.data.get_mut(index)
     }
 
     pub fn find_first<F: Fn(&&T) -> bool>(&self, predicate: F) -> Option<&T> {
@@ -30,8 +34,8 @@ impl<T> Database<T> {
             .collect::<Vec<&T>>()
     }
 
-    pub fn replace(&mut self, i: usize, new_value: T) {
-        if let Some(value) = self.data.get_mut(i) {
+    pub fn replace(&mut self, index: usize, new_value: T) {
+        if let Some(value) = self.data.get_mut(index) {
             *value = new_value;
         }
     }
@@ -56,16 +60,28 @@ impl<T> Database<T> {
             });
     }
 
-    pub fn remove_first<F: Fn(&T) -> bool>(&mut self, predicate: F) {
-        if let Some(i) = self.data.iter()
+    pub fn remove(&mut self, index: usize) -> Option<T> {
+        match self.get(index) {
+            Some(_) => Some(self.data.remove(index)),
+            None => None,
+        }
+    }
+
+    pub fn remove_first<F: Fn(&T) -> bool>(&mut self, predicate: F) -> Option<T> {
+        match self.data.iter()
             .position(predicate)
         {
-            self.data.remove(i);
+            Some(index) => Some(self.data.remove(index)),
+            None => None,
         }
     }
 
     pub fn remove_all<F: Fn(&T) -> bool>(&mut self, predicate: F) {
-        self.data.retain(|data| !predicate(data));
+        self.data.retain(|value| !predicate(value));
+    }
+
+    pub fn len(&self) -> usize {
+        self.data.len()
     }
 
     pub fn new() -> Database<T> {

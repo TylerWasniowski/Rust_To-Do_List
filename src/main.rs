@@ -3,7 +3,6 @@ extern crate regex;
 pub mod db;
 pub mod to_do_list;
 
-use db::Database;
 use to_do_list::ToDoList;
 
 use regex::Regex;

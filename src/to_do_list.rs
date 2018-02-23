@@ -9,7 +9,7 @@ pub struct ToDoList {
     entries: Database<Entry>,
 }
 
-struct Entry {
+pub struct Entry {
     task: String,
     completed: bool,
 }
@@ -17,6 +17,10 @@ struct Entry {
 impl ToDoList {
     pub fn add(&mut self, item: String) {
         self.entries.add(Entry::new(item));
+    }
+
+    pub fn get_entry(&self, index: usize) -> Option<&Entry> {
+        self.entries.get(index)
     }
 
     pub fn position_first(&self, reg_exp: Regex) -> Option<usize> {
@@ -88,6 +92,12 @@ impl Entry {
             task,
             completed: false,
         }
+    }
+}
+
+impl PartialEq for Entry {
+    fn eq(&self, other: &Entry) -> bool {
+        self.task == other.task && self.completed == other.completed
     }
 }
 

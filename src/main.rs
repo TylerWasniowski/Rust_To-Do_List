@@ -3,29 +3,69 @@ extern crate regex;
 pub mod db;
 pub mod to_do_list;
 
-use to_do_list::ToDoList;
+#[cfg(test)]
+mod to_do_list_tests {
+    use to_do_list::ToDoList;
+    use regex::Regex;
 
-use regex::Regex;
+    #[test]
+    fn position_first() {
+        let to_do_list = setup_to_do_list();
 
-fn main() {
-    // ToDoList test
-    let mut to_do_list = ToDoList::new();
-    to_do_list.add("Do laundry".to_string());
-    to_do_list.add("Finish homework".to_string());
-    to_do_list.add("Finish to-do list".to_string());
-    println!("ToDoList:");
-    println!("{}", to_do_list);
-    println!();
-    println!("Looking for position of first entry containing laundry (case-insensitive): {:?}",
-             to_do_list.position_first(Regex::new(r"(?i)laundry").unwrap()));
-    println!();
-    println!("Looking for all positions of entries containing Finish (case-insensitive): {:?}",
-             to_do_list.position_all(Regex::new(r"(?i)finish").unwrap()));
-    println!();
-    println!("Marking first as completed.");
-    to_do_list.mark(0, true);
-    println!("ToDoList:");
-    println!("{}", to_do_list);
+        assert_eq!(to_do_list.position_first(Regex::new(r"(?i)laundry").unwrap()),
+                   Some(0));
+        assert_eq!(to_do_list.position_first(Regex::new(r"Foo").unwrap()),
+                   None);
+    }
+
+    #[test]
+    fn position_all() {
+        let to_do_list = setup_to_do_list();
+
+        assert_eq!(to_do_list.position_all(Regex::new(r"(?i)finish").unwrap()),
+                   vec![1, 2]);
+        assert_eq!(to_do_list.position_all(Regex::new(r"Foo").unwrap()),
+                   Vec::new() as Vec<usize>);
+    }
+
+    #[test]
+    fn mark() {
+        let mut to_do_list = setup_to_do_list();
+
+        to_do_list.mark(0, true);
+
+        assert_eq!(to_do_list.to_string().contains("Do laundry: completed"), true);
+    }
+
+    #[test]
+    fn rename() {
+        let mut to_do_list = setup_to_do_list();
+
+        to_do_list.rename(1, "Finish Math 179 HW".to_string());
+
+        assert_eq!(to_do_list.to_string().contains("Finish Math 179 HW: not completed"), true);
+    }
+
+    #[test]
+    fn remove() {
+        let mut to_do_list = setup_to_do_list();
+
+        to_do_list.remove(1);
+        to_do_list.remove(2);
+        to_do_list.remove(1);
+
+        assert_eq!(to_do_list.to_string(), "Do laundry: not completed");
+    }
+
+    fn setup_to_do_list() -> ToDoList {
+        let mut to_do_list = ToDoList::new();
+
+        to_do_list.add("Do laundry".to_string());
+        to_do_list.add("Finish homework".to_string());
+        to_do_list.add("Finish to-do list".to_string());
+
+        to_do_list
+    }
 }
 
 #[cfg(test)]
@@ -36,6 +76,7 @@ mod database_tests {
     fn position_first() {
         let empty_database: Database<String> = Database::new();
         let database = setup_database();
+
         assert_eq!(empty_database.position_first(|value| value.len() < 5),
                    None);
         assert_eq!(database.position_first(|value| value.len() < 5),
@@ -46,6 +87,7 @@ mod database_tests {
     fn position_all() {
         let empty_database: Database<String> = Database::new();
         let database = setup_database();
+
         assert_eq!(empty_database.position_all(|value| value.len() < 5),
                    Vec::new());
         assert_eq!(database.position_all(|value| value.len() < 5),
@@ -56,6 +98,7 @@ mod database_tests {
     fn find_first() {
         let empty_database: Database<String> = Database::new();
         let database = setup_database();
+
         assert_eq!(empty_database.find_first(|value| value.len() < 5),
                    None);
         assert_eq!(database.find_first(|value| value.len() < 5),
@@ -66,6 +109,7 @@ mod database_tests {
     fn find_all() {
         let empty_database: Database<String> = Database::new();
         let database = setup_database();
+
         assert_eq!(empty_database.find_all(|value| value.len() < 5),
             Vec::new() as Vec<&String>);
         assert_eq!(database.find_all(|value| value.len() > 5),
@@ -84,6 +128,7 @@ mod database_tests {
 
         database.remove_first(|value| value.len() < 5);
         database.remove_first(|value| value.len() < 5);
+
         assert_eq!(database.read_all(), &vec!["Hello world!".to_string()]);
     }
 
@@ -95,6 +140,7 @@ mod database_tests {
         database.remove_first(|value| value.len() < 5);
         database.remove_first(|value| value.len() < 5);
         database.remove_first(|value| value.len() < 5);
+
         assert_eq!(database.read_all(),
                    &vec!["Hello world!".to_string(), "Hello".to_string(), "Hola mundo!".to_string()]);
     }
@@ -105,6 +151,7 @@ mod database_tests {
 
         database.replace_first(|value| value == &&"Hello".to_string(),
                                "World".to_string());
+
         assert_eq!(database.get(3), Some(&"World".to_string()));
     }
 
@@ -116,6 +163,7 @@ mod database_tests {
                                "World".to_string());
         database.replace_all(|value| value.len() > 50,
                              "Goodbye".to_string());
+
         assert_eq!(database.read_all(),
                    &vec!["Hello world!".to_string(), "World".to_string(), "World".to_string(),
                          "World".to_string(), "Hola mundo!".to_string(), "World".to_string()]);
